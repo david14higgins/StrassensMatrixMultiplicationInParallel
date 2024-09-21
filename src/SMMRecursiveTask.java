@@ -1,6 +1,17 @@
-public class SequentialSMM {
+import java.util.concurrent.RecursiveTask;
 
-    public int[][] multiplyMatrix(int[][] matrixA, int[][] matrixB) {
+public class SMMRecursiveTask extends RecursiveTask<int[][]> {
+
+    private final int[][] matrixA;
+    private final int[][] matrixB;
+
+    public SMMRecursiveTask(int[][] matrixA, int[][] matrixB) {
+        this.matrixA = matrixA;
+        this.matrixB = matrixB;
+    }
+
+    @Override
+    protected int[][] compute() {
         int col1 = matrixA[0].length;
         int row1 = matrixA.length;
         int col2 = matrixB[0].length;
@@ -18,7 +29,8 @@ public class SequentialSMM {
         // ----- BASE CASE ----- to be modified when modifying granularity
         if (col1 == 1){
             resultMatrix[0][0] = matrixA[0][0] * matrixB[0][0];
-        } else {
+            return resultMatrix;
+        } else { // ----- SPLITTING WORKLOAD -----
             int splitIndex = col1 / 2;
 
             int[][] resultMatrix_00 = new int[splitIndex][splitIndex];
@@ -48,6 +60,7 @@ public class SequentialSMM {
                 }
             }
 
+            
             addMatrix(multiplyMatrix(a00, b00), multiplyMatrix(a01, b10),resultMatrix_00, splitIndex);
             addMatrix(multiplyMatrix(a00, b01), multiplyMatrix(a01, b11),resultMatrix_01, splitIndex);
             addMatrix(multiplyMatrix(a10, b00), multiplyMatrix(a11, b10),resultMatrix_10, splitIndex);
@@ -63,6 +76,7 @@ public class SequentialSMM {
             }
         }
         return resultMatrix;
+        }
     }
 
     //Helper Methods
