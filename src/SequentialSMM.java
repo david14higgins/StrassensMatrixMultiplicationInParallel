@@ -1,77 +1,95 @@
 public class SequentialSMM {
+    public int[][] multiply(int[][] matrixA, int[][] matrixB)
+    {
+        int n = matrixA.length;
+        int[][] resultMatrix = new int[n][n];
 
-    public int[][] multiplyMatrix(int[][] matrixA, int[][] matrixB) {
-        int col1 = matrixA[0].length;
-        int row1 = matrixA.length;
-        int col2 = matrixB[0].length;
-        int row2 = matrixB.length;
-
-        if (col1 != row2) {
-            System.out.println("\nError: The number of columns in Matrix A  must be equal to the number of rows in Matrix B\n");
-            int[][] temp = new int[1][1];
-            temp[0][0]=0;
-            return temp;
-        }
-
-        int[][] resultMatrix = new int[row1][col2];
-
-        // ----- BASE CASE ----- to be modified when modifying granularity
-        if (col1 == 1){
+        // Base Case
+        if (n == 1)
             resultMatrix[0][0] = matrixA[0][0] * matrixB[0][0];
-        } else {
-            int splitIndex = col1 / 2;
+        // General Case, apply recursion
+        else
+        {
+            int[][] A11 = new int[n/2][n/2];
+            int[][] A12 = new int[n/2][n/2];
+            int[][] A21 = new int[n/2][n/2];
+            int[][] A22 = new int[n/2][n/2];
+            int[][] B11 = new int[n/2][n/2];
+            int[][] B12 = new int[n/2][n/2];
+            int[][] B21 = new int[n/2][n/2];
+            int[][] B22 = new int[n/2][n/2];
 
-            int[][] resultMatrix_00 = new int[splitIndex][splitIndex];
-            int[][] resultMatrix_01 = new int[splitIndex][splitIndex];
-            int[][] resultMatrix_10 = new int[splitIndex][splitIndex];
-            int[][] resultMatrix_11 = new int[splitIndex][splitIndex];
+            // Dividing matrix A
+            split(matrixA, A11, 0 , 0);
+            split(matrixA, A12, 0 , n/2);
+            split(matrixA, A21, n/2, 0);
+            split(matrixA, A22, n/2, n/2);
 
-            int[][] a00 = new int[splitIndex][splitIndex];
-            int[][] a01 = new int[splitIndex][splitIndex];
-            int[][] a10 = new int[splitIndex][splitIndex];
-            int[][] a11 = new int[splitIndex][splitIndex];
-            int[][] b00 = new int[splitIndex][splitIndex];
-            int[][] b01 = new int[splitIndex][splitIndex];
-            int[][] b10 = new int[splitIndex][splitIndex];
-            int[][] b11 = new int[splitIndex][splitIndex];
+            // Dividing matrix B
+            split(matrixB, B11, 0 , 0);
+            split(matrixB, B12, 0 , n/2);
+            split(matrixB, B21, n/2, 0);
+            split(matrixB, B22, n/2, n/2);
 
-            for (int i = 0; i < splitIndex; i++){
-                for (int j = 0; j < splitIndex; j++) {
-                    a00[i][j] = matrixA[i][j];
-                    a01[i][j] = matrixA[i][j + splitIndex];
-                    a10[i][j] = matrixA[splitIndex + i][j];
-                    a11[i][j] = matrixA[i + splitIndex][j + splitIndex];
-                    b00[i][j] = matrixB[i][j];
-                    b01[i][j] = matrixB[i][j + splitIndex];
-                    b10[i][j] = matrixB[splitIndex + i][j];
-                    b11[i][j] = matrixB[i + splitIndex][j + splitIndex];
-                }
-            }
+            int[][] M1 = multiply(add(A11, A22), add(B11, B22));
+            int[][] M2 = multiply(add(A21, A22), B11);
+            int[][] M3 = multiply(A11, sub(B12, B22));
+            int[][] M4 = multiply(A22, sub(B21, B11));
+            int[][] M5 = multiply(add(A11, A12), B22);
+            int[][] M6 = multiply(sub(A21, A11), add(B11, B12));
+            int[][] M7 = multiply(sub(A12, A22), add(B21, B22));
 
-            addMatrix(multiplyMatrix(a00, b00), multiplyMatrix(a01, b10),resultMatrix_00, splitIndex);
-            addMatrix(multiplyMatrix(a00, b01), multiplyMatrix(a01, b11),resultMatrix_01, splitIndex);
-            addMatrix(multiplyMatrix(a10, b00), multiplyMatrix(a11, b10),resultMatrix_10, splitIndex);
-            addMatrix(multiplyMatrix(a10, b01), multiplyMatrix(a11, b11),resultMatrix_11, splitIndex);
+            int [][] C11 = add(sub(add(M1, M4), M5), M7);
+            int [][] C12 = add(M3, M5);
+            int [][] C21 = add(M2, M4);
+            int [][] C22 = add(sub(add(M1, M3), M2), M6);
 
-            for (int i = 0; i < splitIndex; i++){
-                for (int j = 0; j < splitIndex; j++) {
-                    resultMatrix[i][j] = resultMatrix_00[i][j];
-                    resultMatrix[i][j + splitIndex] = resultMatrix_01[i][j];
-                    resultMatrix[splitIndex + i][j] = resultMatrix_10[i][j];
-                    resultMatrix[i + splitIndex] [j + splitIndex] = resultMatrix_11[i][j];
-                }
-            }
+            // join 4 halves into one result matrix
+            join(C11, resultMatrix, 0 , 0);
+            join(C12, resultMatrix, 0 , n/2);
+            join(C21, resultMatrix, n/2, 0);
+            join(C22, resultMatrix, n/2, n/2);
         }
         return resultMatrix;
     }
 
-    //Helper Methods
-    private static void addMatrix(int[][] matrixA,int[][] matrixB,int[][] resultMatrix, int splitIndex)
+
+    // ----- Helper Methods -----
+
+    // Function to sub two matrices
+    public int[][] sub(int[][] matrixA, int[][] matrixB)
     {
-        for (int i = 0; i < splitIndex; i++){
-            for (int j = 0; j < splitIndex; j++){
+        int n = matrixA.length;
+        int[][] C = new int[n][n];
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                C[i][j] = matrixA[i][j] - matrixB[i][j];
+        return C;
+    }
+    // Function to add two matrices
+    public int[][] add(int[][] matrixA, int[][] matrixB)
+    {
+        int n = matrixA.length;
+        int[][] resultMatrix = new int[n][n];
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
                 resultMatrix[i][j] = matrixA[i][j] + matrixB[i][j];
-            }
-        }
+        return resultMatrix;
+    }
+
+    // Method to split parent matrix into child matrices
+    public void split(int[][] parentMatrix, int[][] childMatrix, int startParentRowIndex, int startParentColumnIndex)
+    {
+        for(int childRowIndex = 0, parentRowIndex = startParentRowIndex; childRowIndex < childMatrix.length; childRowIndex++, parentRowIndex++)
+            for(int childColumnIndex = 0, parentColumnIndex = startParentColumnIndex; childColumnIndex < childMatrix.length; childColumnIndex++, parentColumnIndex++)
+                childMatrix[childRowIndex][childColumnIndex] = parentMatrix[parentRowIndex][parentColumnIndex];
+    }
+
+    // Function to join child matrices into parent matrix
+    public void join(int[][] childMatrix, int[][] parentMatrix, int startParentRowIndex, int startParentColumnIndex)
+    {
+        for(int childRowIndex = 0, parentRowIndex = startParentRowIndex; childRowIndex < childMatrix.length; childRowIndex++, parentRowIndex++)
+            for(int childColumnIndex = 0, parentColumnIndex = startParentColumnIndex; childColumnIndex < childMatrix.length; childColumnIndex++, parentColumnIndex++)
+                parentMatrix[parentRowIndex][parentColumnIndex] = childMatrix[childRowIndex][childColumnIndex];
     }
 }

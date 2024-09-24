@@ -17,7 +17,7 @@ public class Main {
         printMatrix(matrixB);
 
         SequentialSMM sequentialSMM = new SequentialSMM();
-        int[][] resultMatrix = sequentialSMM.multiplyMatrix(matrixA, matrixB);
+        int[][] resultMatrix = sequentialSMM.multiply(matrixA, matrixB);
 
         System.out.println("Result Array =>");
         printMatrix(resultMatrix);
