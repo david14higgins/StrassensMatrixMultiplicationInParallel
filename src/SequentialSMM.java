@@ -55,11 +55,32 @@ public class SequentialSMM {
         return resultMatrix;
     }
 
+    private int[][] naiveMultiply(int[][] matrixA, int[][] matrixB) {
+        // Check if matrices are compatible for multiplication
+        if (matrixA[0].length != matrixB.length) {
+            throw new IllegalArgumentException("Matrix A's columns must match Matrix B's rows for multiplication.");
+        }
+
+        int[][] resultMatrix = new int[matrixA.length][matrixB[0].length];
+
+        for (int i = 0; i < matrixA.length; i++) {
+            for (int j = 0; j < matrixB[0].length; j++) {
+                //Intialise cell of result matrix
+                resultMatrix[i][j] = 0;
+                for (int k = 0; k < matrixA[0].length; k++) {
+                    resultMatrix[i][j] += matrixA[i][k] * matrixB[k][j];
+                }
+            }
+        }
+
+        return resultMatrix;
+    }
+    
 
     // ----- Helper Methods -----
 
     // Function to sub two matrices
-    public int[][] sub(int[][] matrixA, int[][] matrixB)
+    private int[][] sub(int[][] matrixA, int[][] matrixB)
     {
         int n = matrixA.length;
         int[][] resultMatrix = new int[n][n];
@@ -69,7 +90,7 @@ public class SequentialSMM {
         return resultMatrix;
     }
     // Function to add two matrices
-    public int[][] add(int[][] matrixA, int[][] matrixB)
+    private int[][] add(int[][] matrixA, int[][] matrixB)
     {
         int n = matrixA.length;
         int[][] resultMatrix = new int[n][n];
@@ -80,7 +101,7 @@ public class SequentialSMM {
     }
 
     // Method to split parent matrix into child matrices
-    public void split(int[][] parentMatrix, int[][] childMatrix, int startParentRowIndex, int startParentColumnIndex)
+    private void split(int[][] parentMatrix, int[][] childMatrix, int startParentRowIndex, int startParentColumnIndex)
     {
         for(int childRowIndex = 0, parentRowIndex = startParentRowIndex; childRowIndex < childMatrix.length; childRowIndex++, parentRowIndex++)
             for(int childColumnIndex = 0, parentColumnIndex = startParentColumnIndex; childColumnIndex < childMatrix.length; childColumnIndex++, parentColumnIndex++)
@@ -88,7 +109,7 @@ public class SequentialSMM {
     }
 
     // Function to join child matrices into parent matrix
-    public void join(int[][] childMatrix, int[][] parentMatrix, int startParentRowIndex, int startParentColumnIndex)
+    private void join(int[][] childMatrix, int[][] parentMatrix, int startParentRowIndex, int startParentColumnIndex)
     {
         for(int childRowIndex = 0, parentRowIndex = startParentRowIndex; childRowIndex < childMatrix.length; childRowIndex++, parentRowIndex++)
             for(int childColumnIndex = 0, parentColumnIndex = startParentColumnIndex; childColumnIndex < childMatrix.length; childColumnIndex++, parentColumnIndex++)
