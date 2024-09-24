@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,11 +17,31 @@ public class Main {
         System.out.println("Array B =>");
         printMatrix(matrixB);
 
+        long sequentialStartTime = System.nanoTime();
         SequentialSMM sequentialSMM = new SequentialSMM();
-        int[][] resultMatrix = sequentialSMM.multiply(matrixA, matrixB);
+        int[][] resultMatrix1 = sequentialSMM.multiply(matrixA, matrixB);
+        long sequentialEndTime = System.nanoTime();
+        long sequentialExecutionTime = sequentialEndTime - sequentialStartTime;
+
+        long forkStartTime = System.nanoTime();
+        ForkJoinPoolSMM forkJoinPoolSMM = new ForkJoinPoolSMM();
+        int[][] resultMatrix2 = forkJoinPoolSMM.execute(matrixA, matrixB);
+        long forkEndTime = System.nanoTime();
+        long forkExecutionTime = forkEndTime - forkStartTime;
 
         System.out.println("Result Array =>");
-        printMatrix(resultMatrix);
+        printMatrix(resultMatrix1);
+        System.out.println();
+
+        if (forkExecutionTime > sequentialExecutionTime) {
+            double multiplier = (double) forkExecutionTime / sequentialExecutionTime;
+            System.out.println("Sequential time was " + String.format("%.2f", multiplier) + "x faster");
+        } else {
+            double multiplier = (double) sequentialExecutionTime / forkExecutionTime;
+            System.out.println("ForkJoinPool time was " + String.format("%.2f", multiplier) + "x faster");
+        }
+
+
     }
 
     //IO methods
