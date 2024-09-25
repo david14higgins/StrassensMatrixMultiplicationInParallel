@@ -1,12 +1,17 @@
 public class SequentialSMM {
+    private final int granularity;
+
+    public SequentialSMM(int granularity) {
+        this.granularity = granularity;
+    }
     public int[][] multiply(int[][] matrixA, int[][] matrixB)
     {
         int n = matrixA.length;
         int[][] resultMatrix = new int[n][n];
 
         // Base Case
-        if (n == 1)
-            resultMatrix[0][0] = matrixA[0][0] * matrixB[0][0];
+        if (n <= granularity)
+            resultMatrix = naiveMultiply(matrixA, matrixB);
         // General Case, apply recursion
         else
         {
@@ -75,7 +80,7 @@ public class SequentialSMM {
 
         return resultMatrix;
     }
-    
+
 
     // ----- Helper Methods -----
 
