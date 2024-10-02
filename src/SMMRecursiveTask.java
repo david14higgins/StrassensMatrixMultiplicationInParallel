@@ -5,7 +5,7 @@ public class SMMRecursiveTask extends RecursiveTask<int[][]> {
     private final int[][] matrixA;
     private final int[][] matrixB;
 
-    public SMMRecursiveTask(int[][] matrixA, int[][] matrixB) {
+    public SMMRecursiveTask(int[][] matrixA, int[][] matrixB, int forkingGranularity) {
         this.matrixA = matrixA;
         this.matrixB = matrixB;
     }
